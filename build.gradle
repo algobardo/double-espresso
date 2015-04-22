@@ -15,7 +15,7 @@ sourceCompatibility = JavaVersion.VERSION_1_5
 targetCompatibility = JavaVersion.VERSION_1_5
 
 version = '2.0'
-group = 'com.android.support.test.espresso'
+group = 'dk.au.cs.android.espresso'
 
 repositories {
     jcenter()
