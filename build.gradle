@@ -18,6 +18,7 @@ version = '2.0'
 group = 'dk.au.cs.android.espresso'
 
 repositories {
+    mavenLocal()
     jcenter()
 }
 
@@ -27,7 +28,7 @@ android {
     buildToolsVersion '21.0.0'
 
     defaultConfig {
-        minSdkVersion 8
+        minSdkVersion 15 // CQA: was 8
         targetSdkVersion 21
     }
 
@@ -64,6 +65,10 @@ dependencies {
     androidTestCompile 'org.hamcrest:hamcrest-integration:1.1'
     androidTestCompile 'org.mockito:mockito-core:1.9.5'
     androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.0'
+
+    // server
+    compile 'dk.au.cs:jsonrpc-java:1.1.2'
+    compile "dk.au.cs.thor.rti:rtinterface:0.1"
 }
 
 install {

@@ -19,7 +19,7 @@
     package="android.support.test.espresso.contrib" >
 
     <uses-sdk
-        android:minSdkVersion="8"
+        android:minSdkVersion="15"
         android:targetSdkVersion="21" />
 
     <application />
