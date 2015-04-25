@@ -110,6 +110,8 @@ public final class ViewInteraction {
   }
 
   private void doPerform(final ViewAction viewAction) {
+    Log.v("Espresso", "ViewInteraction: doPerform(" + viewAction + ")");
+
     checkNotNull(viewAction);
     final Matcher<? extends View> constraints = checkNotNull(viewAction.getConstraints());
     runSynchronouslyOnUiThread(new Runnable() {

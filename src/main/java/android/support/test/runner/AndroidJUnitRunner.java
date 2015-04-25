@@ -30,6 +30,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.IBinder;
+import android.os.StrictMode;
+import android.support.test.espresso.Espresso;
 import android.support.test.internal.runner.TestRequest;
 import android.support.test.internal.runner.TestRequestBuilder;
 import android.support.test.internal.runner.listener.ActivityFinisherRunListener;
@@ -57,6 +59,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -252,6 +255,8 @@ public class AndroidJUnitRunner extends MonitoringInstrumentation {
     public void onStart() {
         super.onStart();
 
+        Espresso.startServer(); // CQA
+
         if (getBooleanArgument(ARGUMENT_DEBUG)) {
             Debug.waitForDebugger();
         }
@@ -296,6 +301,9 @@ public class AndroidJUnitRunner extends MonitoringInstrumentation {
         } catch (RuntimeException re) {
             Log.w(LOG_TAG, "Failed to send analytics.", re);
         }
+
+        Espresso.stopServer(); // CQA
+
         super.finish(resultCode, results);
     }
 
