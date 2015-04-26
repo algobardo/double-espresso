@@ -110,7 +110,8 @@ public final class ViewInteraction {
   }
 
   private void doPerform(final ViewAction viewAction) {
-    Log.v("Espresso", "ViewInteraction: doPerform(" + viewAction + ")");
+    Log.v("Espresso", "ViewInteraction: doPerform(" + viewAction + ")"); // CQA
+    Espresso.getSchedulerInterface().atInjectionSite(viewAction.toString());
 
     checkNotNull(viewAction);
     final Matcher<? extends View> constraints = checkNotNull(viewAction.getConstraints());

@@ -68,7 +68,9 @@ dependencies {
 
     // server
     compile 'dk.au.cs:jsonrpc-java:1.1.2'
-    compile "dk.au.cs.thor.rti:rtinterface:0.1"
+    compile ("dk.au.cs.thor.rti:rtinterface:0.1") {
+        exclude group: "com.google.android"
+    }
 }
 
 install {

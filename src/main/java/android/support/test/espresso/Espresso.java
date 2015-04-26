@@ -52,6 +52,7 @@ import org.json.rpc.server.JsonRpcExecutor;
 import org.json.rpc.server.TcpServerTransport;
 
 import java.lang.reflect.Method;
+import java.net.ServerSocket;
 import java.net.URL;
 import java.util.List;
 
@@ -94,30 +95,32 @@ public final class Espresso {
             Log.i("Espresso", "Setting up the server");
             final String portEmuServerFinal = portEmulatorServer;
 
-            Thread server = new Thread(new Runnable() {
+            Thread serverThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     JsonRpcExecutor executor = new JsonRpcExecutor();
                     executor.addHandler("rti", rti, SchedulerTestInterface.class);
 
-                    TcpServerTransport transport = new TcpServerTransport(Integer.parseInt(portEmuServerFinal));
-                    while (true && !rti.stopped) {
-                        executor.execute(transport);
+                    TcpServerTransport server = new TcpServerTransport(Integer.parseInt(portEmuServerFinal));
+
+                    while (!rti.stopped) {
+                        executor.execute(server);
+                        server.closeClient();
                     }
+
+                    server.closeServer();
 
                     Log.i("Espresso", "Server shutting down");
                 }
             });
 
-            server.start();
+            serverThread.start();
 
             // Send a ready message to the scheduler
-            TcpRpcClientTransport transport = new TcpRpcClientTransport(new URL("http://10.0.2.2:" + portHostServer));
-            JsonRpcInvoker invoker = new JsonRpcInvoker();
-            SchedulerInterface scheduler = invoker.get(transport, "scheduler", SchedulerInterface.class);
+            client = new TcpRpcClientTransport(new URL("http://10.0.2.2:" + portHostServer));
 
             Log.i("Espresso", "Sending message Ready to the scheduler");
-            scheduler.ready();
+            getSchedulerInterface().ready();
 
             // Wait for the scheduler to start the test
             int waits = 0;
@@ -138,10 +141,20 @@ public final class Espresso {
     }
 
     public static void stopServer() {
+        // Stop rti (and hence the server)
         rti.stopped = true;
+
+        // Close the client connection
+        client.close();
+    }
+
+    public static SchedulerInterface getSchedulerInterface() {
+        JsonRpcInvoker invoker = new JsonRpcInvoker();
+        return invoker.get(client, "scheduler", SchedulerInterface.class);
     }
 
     public static final RtiImplementation rti = new RtiImplementation();
+    public static TcpRpcClientTransport client;
 
     private static class RtiImplementation implements SchedulerTestInterface {
         public boolean started = false;
