@@ -143,9 +143,6 @@ public final class Espresso {
     public static void stopServer() {
         // Stop rti (and hence the server)
         rti.stopped = true;
-
-        // Close the client connection
-        client.close();
     }
 
     public static SchedulerInterface getSchedulerInterface() {
