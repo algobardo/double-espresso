@@ -81,60 +81,73 @@ public final class Espresso {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        String portEmulatorServer = null;
-        String portHostServer = null;
+        String portEmulatorServerStr = null;
+        String portHostServerStr = null;
 
         try {
             Class clazz = Class.forName("android.os.SystemProperties");
             Method method = clazz.getDeclaredMethod("get", String.class);
 
-            portEmulatorServer = (String) method.invoke(null, "port.emu");
-            portHostServer = (String) method.invoke(null, "port.host");
+            portEmulatorServerStr = (String) method.invoke(null, "port.emu");
+            portHostServerStr = (String) method.invoke(null, "port.host");
+
+            final int portEmulatorServer = !portEmulatorServerStr.equals("") ? Integer.parseInt(portEmulatorServerStr) : -1;
+            final int portHostServer = !portHostServerStr.equals("") ? Integer.parseInt(portHostServerStr) : -1;
 
             // Set-up the server
-            Log.i("Espresso", "Setting up the server");
-            final String portEmuServerFinal = portEmulatorServer;
+            if (portEmulatorServer >= 0 && portHostServer >= 0) {
+                Log.i("Espresso", "Setting up the server");
+                final int portEmuServerFinal = portEmulatorServer;
 
-            Thread serverThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    JsonRpcExecutor executor = new JsonRpcExecutor();
-                    executor.addHandler("rti", rti, SchedulerTestInterface.class);
+                Thread serverThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        JsonRpcExecutor executor = new JsonRpcExecutor();
+                        executor.addHandler("rti", rti, SchedulerTestInterface.class);
 
-                    TcpServerTransport server = new TcpServerTransport(Integer.parseInt(portEmuServerFinal));
+                        TcpServerTransport server = new TcpServerTransport(portEmulatorServer);
 
-                    while (!rti.stopped) {
-                        executor.execute(server);
-                        server.closeClient();
+                        while (!rti.stopped) {
+                            executor.execute(server);
+                            server.closeClient();
+                        }
+
+                        server.closeServer();
+
+                        Log.i("Espresso", "Server shutting down");
                     }
+                });
 
-                    server.closeServer();
+                serverThread.start();
 
-                    Log.i("Espresso", "Server shutting down");
+                // Establish connection to scheduler, such that we can call methods there
+                client = new TcpRpcClientTransport(new URL("http://10.0.2.2:" + portHostServer));
+
+                // Send a ready message to the scheduler
+                try {
+                    Log.i("Espresso", "Sending message Ready to the scheduler");
+                    getSchedulerInterface().ready();
+                } catch (Exception e) {
+                    Log.e("Espresso", "Scheduler not running?", e);
+                    client = null;
                 }
-            });
 
-            serverThread.start();
+                if (client != null) {
+                    // Wait for the scheduler to start the test
+                    int waits = 0;
+                    while (!rti.started) {
+                        waits++;
 
-            // Send a ready message to the scheduler
-            client = new TcpRpcClientTransport(new URL("http://10.0.2.2:" + portHostServer));
-
-            Log.i("Espresso", "Sending message Ready to the scheduler");
-            getSchedulerInterface().ready();
-
-            // Wait for the scheduler to start the test
-            int waits = 0;
-            while (!rti.started) {
-                waits++;
-
-                if (waits >= 10) {
-                    Log.e("Espresso", "The scheduler did not start the test within 2.5 seconds");
-                    break;
+                        if (waits >= 10) {
+                            Log.e("Espresso", "The scheduler did not start the test within 2.5 seconds");
+                            break;
+                        }
+                        Thread.sleep(250);
+                    }
                 }
-                Thread.sleep(250);
             }
         } catch(Exception e) {
-            Log.e("Espresso", "Error connecting to the scheduler (port: " + portHostServer + ")", e);
+            Log.e("Espresso", "Error connecting to the scheduler (port: " + portHostServerStr + ")", e);
         }
 
         Log.i("Espresso", "Starting test");
@@ -146,8 +159,11 @@ public final class Espresso {
     }
 
     public static SchedulerInterface getSchedulerInterface() {
-        JsonRpcInvoker invoker = new JsonRpcInvoker();
-        return invoker.get(client, "scheduler", SchedulerInterface.class);
+        if (client != null) {
+            JsonRpcInvoker invoker = new JsonRpcInvoker();
+            return invoker.get(client, "scheduler", SchedulerInterface.class);
+        }
+        return null;
     }
 
     public static final RtiImplementation rti = new RtiImplementation();

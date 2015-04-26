@@ -38,6 +38,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Inject;
 
+import dk.au.cs.thor.rti.rtinterface.SchedulerInterface;
+
 /**
  * Provides the primary interface for test authors to perform actions or asserts on views.
  * <p>
@@ -110,9 +112,12 @@ public final class ViewInteraction {
   }
 
   private void doPerform(final ViewAction viewAction) {
-    Log.v("Espresso", "ViewInteraction: notifying of doPerform(" + viewAction + ")"); // CQA
-    Espresso.getSchedulerInterface().atInjectionSite(viewAction.toString()); // CQA
-    Log.v("Espresso", "ViewInteraction: ... success"); // CQA
+    SchedulerInterface scheduler = Espresso.getSchedulerInterface(); // CQA
+    if (scheduler != null) {
+      Log.v("Espresso", "ViewInteraction: notifying of doPerform(" + viewAction + ")");
+      scheduler.atInjectionSite(viewAction.toString());
+      Log.v("Espresso", "ViewInteraction: ... success");
+    }
 
     checkNotNull(viewAction);
     final Matcher<? extends View> constraints = checkNotNull(viewAction.getConstraints());
