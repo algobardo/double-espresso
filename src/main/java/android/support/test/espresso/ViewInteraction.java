@@ -31,6 +31,8 @@ import android.widget.AdapterView;
 import org.hamcrest.Matcher;
 import org.hamcrest.StringDescription;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.FutureTask;
@@ -112,12 +114,7 @@ public final class ViewInteraction {
   }
 
   private void doPerform(final ViewAction viewAction) {
-    SchedulerInterface scheduler = Espresso.getSchedulerInterface(); // CQA
-    if (scheduler != null) {
-      Log.v("Espresso", "ViewInteraction: notifying of doPerform(" + viewAction + ")");
-      scheduler.atInjectionSite(viewAction.toString());
-      Log.v("Espresso", "ViewInteraction: ... success");
-    }
+    NeutralExecutor.notifyAtInjectionSite(viewAction); // CQA
 
     checkNotNull(viewAction);
     final Matcher<? extends View> constraints = checkNotNull(viewAction.getConstraints());

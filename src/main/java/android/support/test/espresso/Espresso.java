@@ -69,118 +69,6 @@ public final class Espresso {
     private Espresso() {}
 
     /**
-     * CQA: Connect to the Scheduler.
-     */
-    public static void startServer() {
-        if (!rti.stopped) {
-            Log.v("Espresso", "Server already started");
-        }
-
-        rti.stopped = false;
-
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-
-        String portEmulatorServerStr = null;
-        String portHostServerStr = null;
-
-        try {
-            Class clazz = Class.forName("android.os.SystemProperties");
-            Method method = clazz.getDeclaredMethod("get", String.class);
-
-            portEmulatorServerStr = (String) method.invoke(null, "port.emu");
-            portHostServerStr = (String) method.invoke(null, "port.host");
-
-            final int portEmulatorServer = !portEmulatorServerStr.equals("") ? Integer.parseInt(portEmulatorServerStr) : -1;
-            final int portHostServer = !portHostServerStr.equals("") ? Integer.parseInt(portHostServerStr) : -1;
-
-            // Set-up the server
-            if (portEmulatorServer >= 0 && portHostServer >= 0) {
-                Log.i("Espresso", "Setting up the server");
-                final int portEmuServerFinal = portEmulatorServer;
-
-                Thread serverThread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        JsonRpcExecutor executor = new JsonRpcExecutor();
-                        executor.addHandler("rti", rti, SchedulerTestInterface.class);
-
-                        TcpServerTransport server = new TcpServerTransport(portEmulatorServer);
-
-                        while (!rti.stopped) {
-                            executor.execute(server);
-                            server.closeClient();
-                        }
-
-                        server.closeServer();
-
-                        Log.i("Espresso", "Server shutting down");
-                    }
-                });
-
-                serverThread.start();
-
-                // Establish connection to scheduler, such that we can call methods there
-                client = new TcpRpcClientTransport(new URL("http://10.0.2.2:" + portHostServer));
-
-                // Send a ready message to the scheduler
-                try {
-                    Log.i("Espresso", "Sending message Ready to the scheduler");
-                    getSchedulerInterface().ready();
-                } catch (Exception e) {
-                    Log.e("Espresso", "Scheduler not running?", e);
-                    client = null;
-                }
-
-                if (client != null) {
-                    // Wait for the scheduler to start the test
-                    int waits = 0;
-                    while (!rti.started) {
-                        waits++;
-
-                        if (waits >= 10) {
-                            Log.e("Espresso", "The scheduler did not start the test within 2.5 seconds");
-                            break;
-                        }
-                        Thread.sleep(250);
-                    }
-                }
-            }
-        } catch(Exception e) {
-            Log.e("Espresso", "Error connecting to the scheduler (port: " + portHostServerStr + ")", e);
-        }
-
-        Log.i("Espresso", "Starting test");
-    }
-
-    public static void stopServer() {
-        // Stop rti (and hence the server)
-        rti.stopped = true;
-    }
-
-    public static SchedulerInterface getSchedulerInterface() {
-        if (client != null) {
-            JsonRpcInvoker invoker = new JsonRpcInvoker();
-            return invoker.get(client, "scheduler", SchedulerInterface.class);
-        }
-        return null;
-    }
-
-    public static final RtiImplementation rti = new RtiImplementation();
-    public static TcpRpcClientTransport client;
-
-    private static class RtiImplementation implements SchedulerTestInterface {
-        public boolean started = false;
-        public boolean stopped = true;
-
-        @Override
-        public void start() {
-            Log.i("Espresso", "Received message Start from the scheduler");
-            started = true;
-        }
-    }
-
-    /**
      * Creates a {@link ViewInteraction} for a given view. Note: the view has
      * to be part of the  view hierarchy. This may not be the case if it is rendered as part of
      * an AdapterView (e.g. ListView). If this is the case, use Espresso.onData to load the view
@@ -192,8 +80,6 @@ public final class Espresso {
     public static ViewInteraction onView(final Matcher<View> viewMatcher) {
         return espressoGraph().plus(new ViewInteractionModule(viewMatcher)).get(ViewInteraction.class);
     }
-
-
 
     /**
      * Creates an {@link DataInteraction} for a data object displayed by the application. Use this

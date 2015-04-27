@@ -32,6 +32,7 @@ import android.os.Debug;
 import android.os.IBinder;
 import android.os.StrictMode;
 import android.support.test.espresso.Espresso;
+import android.support.test.espresso.NeutralExecutor;
 import android.support.test.internal.runner.TestRequest;
 import android.support.test.internal.runner.TestRequestBuilder;
 import android.support.test.internal.runner.listener.ActivityFinisherRunListener;
@@ -255,7 +256,7 @@ public class AndroidJUnitRunner extends MonitoringInstrumentation {
     public void onStart() {
         super.onStart();
 
-        Espresso.startServer(); // CQA
+        NeutralExecutor.startServer(); // CQA
 
         if (getBooleanArgument(ARGUMENT_DEBUG)) {
             Debug.waitForDebugger();
@@ -302,7 +303,7 @@ public class AndroidJUnitRunner extends MonitoringInstrumentation {
             Log.w(LOG_TAG, "Failed to send analytics.", re);
         }
 
-        Espresso.stopServer(); // CQA
+        NeutralExecutor.stopServer(); // CQA
 
         super.finish(resultCode, results);
     }
