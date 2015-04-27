@@ -3,19 +3,19 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.github.dcendents:android-maven-plugin:1.2'
-        classpath 'com.android.tools.build:gradle:1.0.0'
+        classpath "com.github.dcendents:android-maven-plugin:1.2"
+        classpath "com.android.tools.build:gradle:1.0.0"
     }
 }
 
-apply plugin: 'android-library'
-apply plugin: 'android-maven'
+apply plugin: "android-library"
+apply plugin: "android-maven"
 
 sourceCompatibility = JavaVersion.VERSION_1_5
 targetCompatibility = JavaVersion.VERSION_1_5
 
-version = '2.0'
-group = 'dk.au.cs.android.espresso'
+version = "2.0"
+group = "dk.au.cs.android.espresso"
 
 repositories {
     mavenLocal()
@@ -23,13 +23,12 @@ repositories {
 }
 
 android {
-
-    compileSdkVersion 21
-    buildToolsVersion '21.0.0'
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
 
     defaultConfig {
         minSdkVersion 15 // CQA: was 8
-        targetSdkVersion 21
+        targetSdkVersion 22
     }
 
     lintOptions {
@@ -37,37 +36,37 @@ android {
     }
 
     packagingOptions {
-        exclude 'LICENSE.txt'
+        exclude "LICENSE.txt"
     }
 }
 
 dependencies {
     // core
-    compile files('libs/dagger-1.2.1.jar')
-    compile files('libs/dagger-compiler-1.2.1.jar')
-    compile files('libs/guava-14.0.1.jar')
+    compile files("libs/dagger-1.2.1.jar")
+    compile files("libs/dagger-compiler-1.2.1.jar")
+    compile files("libs/guava-14.0.1.jar")
 
-    compile 'javax.annotation:javax.annotation-api:1.2'
-    compile 'javax.inject:javax.inject:1'
-    compile 'com.google.code.findbugs:jsr305:2.0.1'
-    compile 'org.hamcrest:hamcrest-library:1.1'
-    compile 'org.hamcrest:hamcrest-integration:1.1'
-    compile 'org.hamcrest:hamcrest-core:1.1'
-    compile 'com.squareup:javawriter:2.1.1'
+    compile "javax.annotation:javax.annotation-api:1.2"
+    compile "javax.inject:javax.inject:1"
+    compile "com.google.code.findbugs:jsr305:2.0.1"
+    compile "org.hamcrest:hamcrest-library:1.1"
+    compile "org.hamcrest:hamcrest-integration:1.1"
+    compile "org.hamcrest:hamcrest-core:1.1"
+    compile "com.squareup:javawriter:2.1.1"
 
     // contrib
-    compile 'com.android.support:support-v4:21.0.3'
-    compile 'com.android.support:recyclerview-v7:21.0.3'
+    compile "com.android.support:support-v4:21.0.3"
+    compile "com.android.support:recyclerview-v7:21.0.3"
 
     // support
-    compile 'junit:junit-dep:4.10'
-    androidTestCompile 'org.hamcrest:hamcrest-library:1.1'
-    androidTestCompile 'org.hamcrest:hamcrest-integration:1.1'
-    androidTestCompile 'org.mockito:mockito-core:1.9.5'
-    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.0'
+    compile "junit:junit-dep:4.10"
+    androidTestCompile "org.hamcrest:hamcrest-library:1.1"
+    androidTestCompile "org.hamcrest:hamcrest-integration:1.1"
+    androidTestCompile "org.mockito:mockito-core:1.9.5"
+    androidTestCompile "com.google.dexmaker:dexmaker-mockito:1.0"
 
     // server
-    compile 'dk.au.cs:jsonrpc-java:1.1.2'
+    compile "dk.au.cs:jsonrpc-java:1.1.2"
     compile ("dk.au.cs.thor.rti:rtinterface:0.1") {
         exclude group: "com.google.android"
     }
@@ -75,7 +74,7 @@ dependencies {
 
 install {
     repositories.mavenInstaller {
-        pom.version = '2.0'
+        pom.version = "2.0"
         pom.artifactId = "library"
     }
 }
