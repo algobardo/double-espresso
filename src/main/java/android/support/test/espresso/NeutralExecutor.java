@@ -119,7 +119,6 @@ public final class NeutralExecutor {
     public static void notifyAtInjectionSite(ViewAction viewAction) {
         SchedulerInterface scheduler = NeutralExecutor.getSchedulerInterface();
         if (scheduler != null) {
-            Log.v("Espresso", "ViewInteraction.doPerform(" + viewAction + "): notifying scheduler");
             String[] activeNeutralComponentNames = null;
 
             List<NeutralComponent> activeNeutralComponents = NeutralExecutor.getActiveNeutralComponents();
@@ -130,11 +129,15 @@ public final class NeutralExecutor {
                     NeutralComponent component = activeNeutralComponents.get(i);
                     activeNeutralComponentNames[i] = component.getName();
                 }
+
+                Log.v("Espresso", "ViewInteraction.doPerform(" + viewAction + "): ... notifying scheduler of " + activeNeutralComponentNames.length + " neutral component(s)");
+            } else {
+                Log.v("Espresso", "ViewInteraction.doPerform(" + viewAction + "): ... notifying scheduler that neutral components=null");
             }
 
             scheduler.atInjectionSite(viewAction.toString(), activeNeutralComponentNames);
 
-            Log.v("Espresso", "ViewInteraction: ... success");
+            Log.v("Espresso", "ViewInteraction.doPerform(" + viewAction + "): ... success");
         }
     }
 
@@ -181,7 +184,8 @@ public final class NeutralExecutor {
 
         @Override
         public void loadNeutralComponents(String[] neutralComponentNames) {
-            Log.i("Espresso", "Received message LoadNeutralComponents from the scheduler");
+            Log.i("Espresso", "Received message LoadNeutralComponents(" + getDebugString(neutralComponentNames) + ") from the scheduler");
+
             List<NeutralComponent> neutralComponents = new ArrayList<NeutralComponent>();
 
             for (String name : neutralComponentNames) {
@@ -198,7 +202,8 @@ public final class NeutralExecutor {
 
         @Override
         public void executeNeutralComponents(String[] neutralComponentNames) {
-            Log.i("Espresso", "Received message ExecuteNeutralComponents from the scheduler");
+            Log.i("Espresso", "Received message ExecuteNeutralComponents(" + getDebugString(neutralComponentNames) + ") from the scheduler");
+
             for (String name : neutralComponentNames) {
                 try {
                     NeutralComponent component = NeutralExecutor.getNeutralComponentByName(name);
@@ -211,6 +216,23 @@ public final class NeutralExecutor {
                     Log.e("Espresso", "Unable to execute neutral component: " + name, e);
                 }
             }
+        }
+
+        private String getDebugString(String[] neutralComponentNames) {
+            StringBuilder debug = new StringBuilder();
+            debug.append("[");
+
+            if (neutralComponentNames.length > 0) {
+                debug.append(neutralComponentNames[0]);
+            }
+
+            for (int i = 1; i < neutralComponentNames.length; i++) {
+                debug.append(", ");
+                debug.append(neutralComponentNames[i]);
+            }
+
+            debug.append("]");
+            return debug.toString();
         }
     }
 }

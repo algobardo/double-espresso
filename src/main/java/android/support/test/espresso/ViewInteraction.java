@@ -114,10 +114,14 @@ public final class ViewInteraction {
   }
 
   private void doPerform(final ViewAction viewAction) {
+    Log.v("Espresso", "ViewInteraction.doPerform(" + viewAction + ")"); // CQA
+
     if (!NeutralExecutor.handlingTestAction) { // CQA
       NeutralExecutor.handlingTestAction = true;
       NeutralExecutor.notifyAtInjectionSite(viewAction);
       NeutralExecutor.handlingTestAction = false;
+    } else {
+      Log.v("Espresso", "ViewInteraction.doPerform(" + viewAction + "): ... not a test case action");
     }
 
     checkNotNull(viewAction);
