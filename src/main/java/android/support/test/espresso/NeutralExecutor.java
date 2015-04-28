@@ -20,6 +20,8 @@ public final class NeutralExecutor {
 
     public static List<NeutralComponent> neutralComponents = null;
 
+    public static boolean handlingTestAction = false;
+
     private NeutralExecutor() {}
 
     public static void startServer() {

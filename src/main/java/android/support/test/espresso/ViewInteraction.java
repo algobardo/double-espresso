@@ -114,7 +114,11 @@ public final class ViewInteraction {
   }
 
   private void doPerform(final ViewAction viewAction) {
-    NeutralExecutor.notifyAtInjectionSite(viewAction); // CQA
+    if (!NeutralExecutor.handlingTestAction) { // CQA
+      NeutralExecutor.handlingTestAction = true;
+      NeutralExecutor.notifyAtInjectionSite(viewAction);
+      NeutralExecutor.handlingTestAction = false;
+    }
 
     checkNotNull(viewAction);
     final Matcher<? extends View> constraints = checkNotNull(viewAction.getConstraints());
